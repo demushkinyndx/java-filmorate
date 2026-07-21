@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.Storage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.validation.user.UserNormalizationService;
 
 import java.util.Collection;
@@ -21,7 +21,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class UserController {
     private final UserNormalizationService userNormalizationService;
-    private final Storage<User> userStorage;
+    private final UserStorage<User> userStorage;
 
     @GetMapping
     public Collection<User> findAll() {

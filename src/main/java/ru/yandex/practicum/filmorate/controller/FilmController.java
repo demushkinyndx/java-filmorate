@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.Storage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
 
@@ -18,8 +18,9 @@ import java.util.Collection;
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor
+
 public class FilmController {
-    private final Storage<Film> filmStorage;
+    private final FilmStorage<Film> filmStorage;
 
     @GetMapping
     public Collection<Film> findAll() {
@@ -27,6 +28,7 @@ public class FilmController {
     }
 
     @PostMapping
+
     public Film create(@Valid @RequestBody Film film) {
         filmStorage.create(film);
         log.info("Добавлен фильм: id={}, name='{}'", film.getId(), film.getName());
