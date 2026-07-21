@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ErrorCodes;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -11,13 +12,22 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class InMemoryUserStorage implements UserStorage<User> {
+public class InMemoryUserStorage implements UserStorageInterface<User> {
     private final Map<Integer, User> users = new LinkedHashMap<>();
     private int nextId = 1;
 
     @Override
     public Collection<User> findAll() {
         return List.copyOf(users.values()); //чтобы внутреннюю коллекцию не меняли
+    }
+
+    @Override
+    public User getById(int id) {
+        User user = users.get(id);
+        if (user == null) {
+            throw new NotFoundException(ErrorCodes.USER_NOT_FOUND, "Пользователь с id=%d не найден".formatted(id));
+        }
+        return user;
     }
 
     @Override
@@ -34,9 +44,7 @@ public class InMemoryUserStorage implements UserStorage<User> {
         if (user.getId() <= 0) {
             throw new ValidationException(ErrorCodes.USER_ID_INVALID, "Id пользователя должен быть положительным");
         }
-        if (!users.containsKey(user.getId())) {
-            throw new ValidationException(ErrorCodes.USER_NOT_FOUND, "Пользователь с id=%d не найден".formatted(user.getId()));
-        }
+        getById(user.getId());
         validateUniqueLoginForUpdate(user); //чтобы при апдейте не случилось два одинаковых логина
 
         users.put(user.getId(), user);
