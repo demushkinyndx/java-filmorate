@@ -15,10 +15,16 @@ import java.util.Map;
 @RestControllerAdvice
 public class ErrorHandler {
     @ExceptionHandler
-    public ResponseEntity<Map<String, Object>> handleValidationException(final ValidationException e) {
-        HttpStatus status = resolveStatus(e.getCode());
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleValidationException(final ValidationException e) {
         log.warn("Ошибка валидации: {}", e.getMessage());
-        return ResponseEntity.status(status).body(errorResponse(e.getCode(), e.getMessage()));
+        return errorResponse(e.getCode(), e.getMessage());
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Map<String, Object>> handleNotFoundException(final NotFoundException e) {
+        log.warn("Объект не найден: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse(e.getCode(), e.getMessage()));
     }
 
     @ExceptionHandler
@@ -56,14 +62,6 @@ public class ErrorHandler {
     public Map<String, Object> handleUnexpectedException(final Exception e) {
         log.error("Непредвиденная ошибка сервера", e);
         return errorResponse(ErrorCodes.INTERNAL_ERROR, "Внутренняя ошибка сервера");
-    }
-
-    private HttpStatus resolveStatus(String code) {
-        return switch (code) {
-            case ErrorCodes.USER_NOT_FOUND, ErrorCodes.FILM_NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case ErrorCodes.USER_LOGIN_DUPLICATE -> HttpStatus.CONFLICT;
-            default -> HttpStatus.BAD_REQUEST;
-        };
     }
 
     private boolean isEmptyRequestBody(HttpMessageNotReadableException e) {
