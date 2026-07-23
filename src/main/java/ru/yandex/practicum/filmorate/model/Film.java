@@ -7,7 +7,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validation.film.ReleaseDateAfterCinemaStart;
 
+import java.util.LinkedHashSet;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 public class Film {
@@ -25,4 +27,6 @@ public class Film {
 
     @Positive(message = "Продолжительность фильма должна быть положительным числом")
     private int duration;
+
+    private Set<Integer> likes = new LinkedHashSet<>();
 }

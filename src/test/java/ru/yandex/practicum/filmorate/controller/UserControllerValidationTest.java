@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class UserControllerValidationTest extends AbstractTestHttpClient {
 
     @Test
-    // создание пользователя ок
+    @DisplayName("Создание пользователя ок")
     void shouldCreateUserWhenDataIsValid() throws Exception {
         String body = "{\"email\":\"user@mail.com\",\"login\":\"login\",\"name\":\"User\",\"birthday\":\"2000-01-01\"}";
 
@@ -29,7 +30,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-    //пустой email не проходит
+    @DisplayName("Пустой email не проходит")
     void shouldRejectBlankEmail() throws Exception {
         String body = "{\"email\":\"\",\"login\":\"login\",\"name\":\"User\",\"birthday\":\"2000-01-01\"}";
 
@@ -40,7 +41,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-    //email без @ не проходит
+    @DisplayName("Email без @ не проходит")
     void shouldRejectEmailWithoutAtSign() throws Exception {
         String body = "{\"email\":\"usermail.com\",\"login\":\"login\",\"name\":\"User\",\"birthday\":\"2000-01-01\"}";
 
@@ -52,7 +53,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-   //неправильный email
+    @DisplayName("Неправильный email")
     void shouldRejectInvalidEmailFormat() throws Exception {
         String body = "{\"email\":\"это-неправильный?эмейл@.\",\"login\":\"login\",\"name\":\"User\",\"birthday\":\"2000-01-01\"}";
 
@@ -64,7 +65,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-    //логин с пробелом не проходит
+    @DisplayName("Логин с пробелом не проходит")
     void shouldRejectLoginWithSpaces() throws Exception {
         String body = "{\"email\":\"user@mail.com\",\"login\":\"my login\",\"name\":\"User\",\"birthday\":\"2000-01-01\"}";
 
@@ -75,7 +76,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-    //нормализация пустого имени
+    @DisplayName("Нормализация пустого имени")
     void shouldSetLoginAsNameWhenNameIsBlank() throws Exception {
         String body = "{\"email\":\"user@gmail.com\",\"login\":\"mylogin\",\"name\":\" \",\"birthday\":\"2000-01-01\"}";
 
@@ -86,7 +87,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-    //дата рождения из будущего не проходит
+    @DisplayName("Дата рождения из будущего не проходит")
     void shouldRejectFutureBirthday() throws Exception {
         String futureDate = LocalDate.now().plusDays(1).toString();
         String body = String.format(
@@ -102,7 +103,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-   // 400 на пустое тело запроса
+    @DisplayName("400 на пустое тело запроса")
     void shouldReturnBadRequestForEmptyBody() throws Exception {
         ApiResponse response = sendJson("POST", "/users", "");
 
@@ -112,7 +113,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-    //неверный формат даты - 400
+    @DisplayName("неверный формат даты - 400")
     void shouldReturnBadRequestForInvalidDateFormat() throws Exception {
         String body = "{\"email\":\"user@mail.com\",\"login\":\"mylogin\",\"name\":\"User\",\"birthday\":\"not-a-date\"}";
 
@@ -124,7 +125,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-    //дублирующийся логин не проходит
+    @DisplayName("дублирующийся логин не проходит")
     void shouldRejectDuplicateLoginOnCreate() throws Exception {
         String firstUserBody = "{\"email\":\"first@mail.com\",\"login\":\"same-login\",\"name\":\"First\",\"birthday\":\"2000-01-01\"}";
         String secondUserBody = "{\"email\":\"second@mail.com\",\"login\":\"same-login\",\"name\":\"Second\",\"birthday\":\"2001-01-01\"}";
@@ -133,7 +134,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
         ApiResponse secondResponse = sendJson("POST", "/users", secondUserBody);
 
         assertEquals(HttpStatus.OK.value(), firstResponse.statusCode());
-        assertEquals(HttpStatus.CONFLICT.value(), secondResponse.statusCode());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), secondResponse.statusCode());
 
         assertEquals("Логин уже занят", secondResponse.body().get("error"));
         assertEquals(ErrorCodes.USER_LOGIN_DUPLICATE, secondResponse.body().get("code"));
@@ -141,7 +142,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
 
 
     @Test
-   //обновление с логином другого пользователя не проходит
+    @DisplayName("Обновление с логином другого пользователя не проходит")
     void shouldRejectDuplicateLoginOnUpdate() throws Exception {
         String firstUserBody = "{\"email\":\"first-update@mail.com\",\"login\":\"first-login\",\"name\":\"First\",\"birthday\":\"2000-01-01\"}";
         String secondUserBody = "{\"email\":\"second-update@mail.com\",\"login\":\"second-login\",\"name\":\"Second\",\"birthday\":\"2001-01-01\"}";
@@ -159,13 +160,13 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
 
         assertEquals(HttpStatus.OK.value(), firstResponse.statusCode());
         assertEquals(HttpStatus.OK.value(), secondResponse.statusCode());
-        assertEquals(HttpStatus.CONFLICT.value(), updateResponse.statusCode());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), updateResponse.statusCode());
         assertEquals("Логин уже занят", updateResponse.body().get("error"));
         assertEquals(ErrorCodes.USER_LOGIN_DUPLICATE, updateResponse.body().get("code"));
     }
 
     @Test
-    //успешное обновление
+    @DisplayName("Успешное обновление")
     void shouldUpdateExistingUser() throws Exception {
         String createBody = "{\"email\":\"before@mail.com\",\"login\":\"before-login\",\"name\":\"Before\",\"birthday\":\"2000-01-01\"}";
 
@@ -198,7 +199,7 @@ class UserControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-    //обновление несуществующего пользователя - ошибка
+    @DisplayName("Обновление несуществующего пользователя - ошибка")
     void shouldRejectUpdateForUnknownUser() throws Exception {
         String updateBody = "{\"id\":99999,\"email\":\"unknown@mail.com\",\"login\":\"unknown-login\",\"name\":\"Unknown\",\"birthday\":\"2000-01-01\"}";
 

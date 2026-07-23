@@ -28,6 +28,20 @@ abstract class AbstractTestHttpClient {
         return sendJsonRequest(path, method, body);
     }
 
+    protected ApiResponse getJsonObject(String path) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url + ":" + port + path))
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        Map<String, Object> responseBody = response.body().isBlank()
+                ? Map.of()
+                : OBJECT_MAPPER.readValue(response.body(), MAP_TYPE);
+
+        return new ApiResponse(response.statusCode(), responseBody);
+    }
+
 
     protected ApiListResponse getJsonList(String path) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
