@@ -29,7 +29,6 @@ public class UserService {
     }
 
     public User getById(int id) {
-        validatePositiveId(id, ErrorCodes.USER_ID_INVALID, "Id пользователя должен быть положительным");
         return userStorage.getById(id);
     }
 
@@ -48,8 +47,12 @@ public class UserService {
     }
 
     public void addFriend(int id, int friendId) {
-        validatePositiveId(id, ErrorCodes.USER_ID_INVALID, "Id пользователя должен быть положительным");
-        validatePositiveId(friendId, ErrorCodes.USER_ID_INVALID, "Id друга должен быть положительным");
+        if (id == friendId) {
+            throw new ValidationException(
+                    ErrorCodes.VALIDATION_REQUEST,
+                    "Нельзя добавлять самого себя в друзья"
+            );
+        }
         User user = userStorage.getById(id);
         User friend = userStorage.getById(friendId);
         user.getFriends().add(friendId);
@@ -57,8 +60,6 @@ public class UserService {
     }
 
     public void removeFriend(int id, int friendId) {
-        validatePositiveId(id, ErrorCodes.USER_ID_INVALID, "Id пользователя должен быть положительным");
-        validatePositiveId(friendId, ErrorCodes.USER_ID_INVALID, "Id друга должен быть положительным");
         User user = userStorage.getById(id);
         User friend = userStorage.getById(friendId);
         user.getFriends().remove(friendId);
@@ -66,14 +67,11 @@ public class UserService {
     }
 
     public List<User> getFriends(int id) {
-        validatePositiveId(id, ErrorCodes.USER_ID_INVALID, "Id пользователя должен быть положительным");
         User user = userStorage.getById(id);
         return mapFriendIdsToUsers(user.getFriends());
     }
 
     public List<User> getCommonFriends(int id, int otherId) {
-        validatePositiveId(id, ErrorCodes.USER_ID_INVALID, "Id пользователя должен быть положительным");
-        validatePositiveId(otherId, ErrorCodes.USER_ID_INVALID, "Id другого пользователя должен быть положительным");
         User user = userStorage.getById(id);
         User otherUser = userStorage.getById(otherId);
 
@@ -89,11 +87,5 @@ public class UserService {
         return friendIds.stream()
                 .map(userStorage::getById)
                 .toList();
-    }
-
-    private void validatePositiveId(int id, String code, String message) {
-        if (id <= 0) {
-            throw new ValidationException(code, message);
-        }
     }
 }

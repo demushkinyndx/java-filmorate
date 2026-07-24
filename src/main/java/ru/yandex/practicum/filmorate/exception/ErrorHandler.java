@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.Map;
 
@@ -38,6 +39,18 @@ public class ErrorHandler {
                 .orElse("Некорректные данные запроса");
 
         log.warn("Ошибка валидации тела запроса: {}", message);
+        return errorResponse(ErrorCodes.VALIDATION_REQUEST, message);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleHandlerMethodValidationException(final HandlerMethodValidationException e) {
+        String message = e.getAllErrors()
+                .stream()
+                .findFirst()
+                .map(error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Некорректные параметры запроса")
+                .orElse("Некорректные параметры запроса");
+        log.warn("Ошибка валидации параметров запроса: {}", message);
         return errorResponse(ErrorCodes.VALIDATION_REQUEST, message);
     }
 

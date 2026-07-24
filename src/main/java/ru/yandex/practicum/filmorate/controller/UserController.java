@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +21,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@Validated
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
@@ -30,7 +33,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getById(@PathVariable int id) {
+    public User getById(@PathVariable @Positive Integer id) {
         return userService.getById(id);
     }
 
@@ -49,22 +52,22 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable int id, @PathVariable int friendId) {
+    public void addFriend(@PathVariable @Positive Integer id, @PathVariable @Positive Integer friendId) {
         userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void removeFriend(@PathVariable int id, @PathVariable int friendId) {
+    public void removeFriend(@PathVariable @Positive Integer id, @PathVariable @Positive Integer friendId) {
         userService.removeFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getFriends(@PathVariable int id) {
+    public List<User> getFriends(@PathVariable @Positive Integer id) {
         return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+    public List<User> getCommonFriends(@PathVariable @Positive Integer id, @PathVariable @Positive Integer otherId) {
         return userService.getCommonFriends(id, otherId);
     }
 }
