@@ -100,6 +100,17 @@ class UserDataTest extends AbstractTestHttpClient {
         assertEquals(user3Id, ((Number) commonFriends.body().getFirst().get("id")).intValue());
     }
 
+    @Test
+    @DisplayName("Нельзя добавить самого себя в друзья")
+    void shouldRejectAddingSelfAsFriend() throws Exception {
+        int userId = createUser("vova@yandex.ru", "vova");
+
+        ApiResponse response = sendJson("PUT", "/users/" + userId + "/friends/" + userId, "");
+
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.statusCode());
+        assertEquals(ErrorCodes.VALIDATION_REQUEST, response.body().get("code"));
+    }
+
     private int createUser(String email, String login) throws Exception {
         String body = "{\"email\":\"%s\",\"login\":\"%s\",\"name\":\"Name\",\"birthday\":\"2000-01-01\"}"
                 .formatted(email, login);
