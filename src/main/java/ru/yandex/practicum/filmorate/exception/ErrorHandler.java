@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.Map;
 
@@ -15,10 +16,16 @@ import java.util.Map;
 @RestControllerAdvice
 public class ErrorHandler {
     @ExceptionHandler
-    public ResponseEntity<Map<String, Object>> handleValidationException(final ValidationException e) {
-        HttpStatus status = resolveStatus(e.getCode());
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleValidationException(final ValidationException e) {
         log.warn("Ошибка валидации: {}", e.getMessage());
-        return ResponseEntity.status(status).body(errorResponse(e.getCode(), e.getMessage()));
+        return errorResponse(e.getCode(), e.getMessage());
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Map<String, Object>> handleNotFoundException(final NotFoundException e) {
+        log.warn("Объект не найден: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse(e.getCode(), e.getMessage()));
     }
 
     @ExceptionHandler
@@ -32,6 +39,18 @@ public class ErrorHandler {
                 .orElse("Некорректные данные запроса");
 
         log.warn("Ошибка валидации тела запроса: {}", message);
+        return errorResponse(ErrorCodes.VALIDATION_REQUEST, message);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleHandlerMethodValidationException(final HandlerMethodValidationException e) {
+        String message = e.getAllErrors()
+                .stream()
+                .findFirst()
+                .map(error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Некорректные параметры запроса")
+                .orElse("Некорректные параметры запроса");
+        log.warn("Ошибка валидации параметров запроса: {}", message);
         return errorResponse(ErrorCodes.VALIDATION_REQUEST, message);
     }
 
@@ -56,14 +75,6 @@ public class ErrorHandler {
     public Map<String, Object> handleUnexpectedException(final Exception e) {
         log.error("Непредвиденная ошибка сервера", e);
         return errorResponse(ErrorCodes.INTERNAL_ERROR, "Внутренняя ошибка сервера");
-    }
-
-    private HttpStatus resolveStatus(String code) {
-        return switch (code) {
-            case ErrorCodes.USER_NOT_FOUND, ErrorCodes.FILM_NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case ErrorCodes.USER_LOGIN_DUPLICATE -> HttpStatus.CONFLICT;
-            default -> HttpStatus.BAD_REQUEST;
-        };
     }
 
     private boolean isEmptyRequestBody(HttpMessageNotReadableException e) {
