@@ -41,3 +41,4 @@ build/
 /log/
 /src/main/log/
 /.mvn/
+/docker/volumes/

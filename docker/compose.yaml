@@ -1,0 +1,38 @@
+name: practicum
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: postgres/Dockerfile
+    container_name: practicum-postgresql
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=abc123
+    healthcheck:
+      test: pg_isready -q -d postgres -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data/
+
+  db-init:
+    image: postgres:16.1
+    container_name: db-init
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../src/main/resources:/sql:ro
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        export PGPASSWORD=abc123
+        psql -h db -U postgres -d postgres -v ON_ERROR_STOP=1 -f /sql/create_db.sql
+        psql -h db -U postgres -d filmsdb -v ON_ERROR_STOP=1 -f /sql/create_schema.sql
+        psql -h db -U postgres -d filmsdb -v ON_ERROR_STOP=1 -f /sql/insert_data.sql
