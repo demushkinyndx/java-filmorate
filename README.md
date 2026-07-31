@@ -14,8 +14,8 @@
   (`false` — заявка не подтверждена, `true` — подтверждённая дружба).
 
 Создание базы: [`src/main/resources/create_db.sql`](src/main/resources/create_db.sql)  
-Создание схемы и таблиц: [`src/main/resources/create_schema.sql`](src/main/resources/create_schema.sql)  
-Справочные данные: [`src/main/resources/insert_data.sql`](src/main/resources/insert_data.sql)
+Создание схемы и таблиц: [`src/main/resources/schema.sql`](src/main/resources/schema.sql)  
+Справочные данные: [`src/main/resources/data.sql`](src/main/resources/data.sql)
 
 ### Примеры основных запросов
 

@@ -34,5 +34,5 @@ services:
         set -e
         export PGPASSWORD=abc123
         psql -h db -U postgres -d postgres -v ON_ERROR_STOP=1 -f /sql/create_db.sql
-        psql -h db -U postgres -d filmsdb -v ON_ERROR_STOP=1 -f /sql/create_schema.sql
-        psql -h db -U postgres -d filmsdb -v ON_ERROR_STOP=1 -f /sql/insert_data.sql
+        psql -h db -U postgres -d filmsdb -v ON_ERROR_STOP=1 -f /sql/schema.sql
+        psql -h db -U postgres -d filmsdb -v ON_ERROR_STOP=1 -f /sql/data.sql
