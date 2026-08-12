@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ErrorCodes;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -10,13 +10,14 @@ import ru.yandex.practicum.filmorate.storage.UserStorageInterface;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final UserStorageInterface<User> userStorage;
+
+    public UserService(@Qualifier("userDbStorage") UserStorageInterface<User> userStorage) {
+        this.userStorage = userStorage;
+    }
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -53,39 +54,18 @@ public class UserService {
                     "Нельзя добавлять самого себя в друзья"
             );
         }
-        User user = userStorage.getById(id);
-        User friend = userStorage.getById(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(id);
+        userStorage.addFriend(id, friendId);
     }
 
     public void removeFriend(int id, int friendId) {
-        User user = userStorage.getById(id);
-        User friend = userStorage.getById(friendId);
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(id);
+        userStorage.removeFriend(id, friendId);
     }
 
     public List<User> getFriends(int id) {
-        User user = userStorage.getById(id);
-        return mapFriendIdsToUsers(user.getFriends());
+        return userStorage.getFriends(id);
     }
 
     public List<User> getCommonFriends(int id, int otherId) {
-        User user = userStorage.getById(id);
-        User otherUser = userStorage.getById(otherId);
-
-        Set<Integer> otherFriends = otherUser.getFriends();
-        return mapFriendIdsToUsers(
-                user.getFriends().stream()
-                        .filter(otherFriends::contains)
-                        .collect(Collectors.toSet())
-        );
-    }
-
-    private List<User> mapFriendIdsToUsers(Set<Integer> friendIds) {
-        return friendIds.stream()
-                .map(userStorage::getById)
-                .toList();
+        return userStorage.getCommonFriends(id, otherId);
     }
 }

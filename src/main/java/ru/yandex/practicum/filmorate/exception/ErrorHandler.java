@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSourceResolvable;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -34,9 +36,7 @@ public class ErrorHandler {
         String message = e.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .findFirst()
-                .map(error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Некорректные данные запроса")
-                .orElse("Некорректные данные запроса");
+                .findFirst().filter(error -> error.getDefaultMessage() != null).map(DefaultMessageSourceResolvable::getDefaultMessage).orElse("Некорректные данные запроса");
 
         log.warn("Ошибка валидации тела запроса: {}", message);
         return errorResponse(ErrorCodes.VALIDATION_REQUEST, message);
@@ -47,9 +47,7 @@ public class ErrorHandler {
     public Map<String, Object> handleHandlerMethodValidationException(final HandlerMethodValidationException e) {
         String message = e.getAllErrors()
                 .stream()
-                .findFirst()
-                .map(error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Некорректные параметры запроса")
-                .orElse("Некорректные параметры запроса");
+                .findFirst().filter(error -> error.getDefaultMessage() != null).map(MessageSourceResolvable::getDefaultMessage).orElse("Некорректные параметры запроса");
         log.warn("Ошибка валидации параметров запроса: {}", message);
         return errorResponse(ErrorCodes.VALIDATION_REQUEST, message);
     }

@@ -7,14 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.exception.ErrorCodes;
 
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class FilmDataTest extends AbstractTestHttpClient {
-
 
     @Test
     @DisplayName("Проверка кодов ошибок в лайках")
@@ -49,18 +45,9 @@ class FilmDataTest extends AbstractTestHttpClient {
     }
 
     private int createFilm(String name) throws Exception {
-        String body = "{\"name\":\"%s\",\"description\":\"desc\",\"releaseDate\":\"2000-01-01\",\"duration\":120}"
+        String body = "{\"name\":\"%s\",\"description\":\"desc\",\"releaseDate\":\"2000-01-01\",\"duration\":120,\"mpa\":{\"id\":1}}"
                 .formatted(name);
         ApiResponse response = sendJson("POST", "/films", body);
         return ((Number) response.body().get("id")).intValue();
-    }
-
-    private int findFilmIndexById(List<Map<String, Object>> films, int filmId) {
-        for (int i = 0; i < films.size(); i++) {
-            if (((Number) films.get(i).get("id")).intValue() == filmId) {
-                return i;
-            }
-        }
-        throw new IllegalStateException("Фильм с id=%d не найден в выдаче popular".formatted(filmId));
     }
 }

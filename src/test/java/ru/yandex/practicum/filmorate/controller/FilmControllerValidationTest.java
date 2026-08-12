@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -12,10 +13,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmControllerValidationTest extends AbstractTestHttpClient {
 
     @Test
-        //Корректный фильм с датой-границей валидируется
+    @DisplayName("Корректный фильм с граничной датой релиза создается")
     void shouldCreateFilmWhenDataIsValid() throws Exception {
         String body = String.format(
-                "{\"name\":\"Film\",\"description\":\"%s\",\"releaseDate\":\"1895-12-28\",\"duration\":120}",
+                "{\"name\":\"Film\",\"description\":\"%s\",\"releaseDate\":\"1895-12-28\",\"duration\":120,\"mpa\":{\"id\":1}}",
                 "a".repeat(200)
         );
 
@@ -28,9 +29,9 @@ class FilmControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-        //пустое название фильма не проходит
+    @DisplayName("Пустое название фильма не проходит валидацию")
     void shouldRejectBlankName() throws Exception {
-        String body = "{\"name\":\" \",\"description\":\"desc\",\"releaseDate\":\"2000-01-01\",\"duration\":100}";
+        String body = "{\"name\":\" \",\"description\":\"desc\",\"releaseDate\":\"2000-01-01\",\"duration\":100,\"mpa\":{\"id\":1}}";
 
         ApiResponse response = sendJson("POST", "/films", body);
 
@@ -40,10 +41,10 @@ class FilmControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-        //описание длиннее 200 символов не проходит
+    @DisplayName("Описание длиннее 200 символов не проходит валидацию")
     void shouldRejectTooLongDescription() throws Exception {
         String body = String.format(
-                "{\"name\":\"Film\",\"description\":\"%s\",\"releaseDate\":\"2000-01-01\",\"duration\":100}",
+                "{\"name\":\"Film\",\"description\":\"%s\",\"releaseDate\":\"2000-01-01\",\"duration\":100,\"mpa\":{\"id\":1}}",
                 "a".repeat(201)
         );
 
@@ -55,9 +56,9 @@ class FilmControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-        //дата релиза раньше 28.12.1895 не проходит
+    @DisplayName("Дата релиза раньше 28.12.1895 не проходит валидацию")
     void shouldRejectReleaseDateBeforeCinemaBirthday() throws Exception {
-        String body = "{\"name\":\"Film\",\"description\":\"desc\",\"releaseDate\":\"1895-12-27\",\"duration\":100}";
+        String body = "{\"name\":\"Film\",\"description\":\"desc\",\"releaseDate\":\"1895-12-27\",\"duration\":100,\"mpa\":{\"id\":1}}";
 
         ApiResponse response = sendJson("POST", "/films", body);
 
@@ -67,9 +68,9 @@ class FilmControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-        //неположительная продолжительность не проходит
+    @DisplayName("Неположительная продолжительность не проходит валидацию")
     void shouldRejectNonPositiveDuration() throws Exception {
-        String body = "{\"name\":\"Film\",\"description\":\"desc\",\"releaseDate\":\"2000-01-01\",\"duration\":0}";
+        String body = "{\"name\":\"Film\",\"description\":\"desc\",\"releaseDate\":\"2000-01-01\",\"duration\":0,\"mpa\":{\"id\":1}}";
 
         ApiResponse response = sendJson("POST", "/films", body);
 
@@ -79,7 +80,7 @@ class FilmControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-        //пустое тело запроса 400
+    @DisplayName("Пустое тело запроса возвращает 400")
     void shouldReturnBadRequestForEmptyBody() throws Exception {
         ApiResponse response = sendJson("POST", "/films", "");
 
@@ -89,9 +90,9 @@ class FilmControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-        //кривой формат даты - ошибка
+    @DisplayName("Некорректный формат даты возвращает 400")
     void shouldReturnBadRequestForInvalidDateFormat() throws Exception {
-        String body = "{\"name\":\"Film\",\"description\":\"desc\",\"releaseDate\":\"not-a-date\",\"duration\":100}";
+        String body = "{\"name\":\"Film\",\"description\":\"desc\",\"releaseDate\":\"not-a-date\",\"duration\":100,\"mpa\":{\"id\":1}}";
 
         ApiResponse response = sendJson("POST", "/films", body);
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.statusCode());
@@ -101,9 +102,9 @@ class FilmControllerValidationTest extends AbstractTestHttpClient {
     }
 
     @Test
-        //несуществующий id фильма
+    @DisplayName("Обновление несуществующего фильма возвращает 404")
     void shouldRejectUnknownFilmId() throws Exception {
-        String body = "{\"id\":9999999,\"name\":\"Film\",\"description\":\"desc\",\"releaseDate\":\"2000-01-01\",\"duration\":100}";
+        String body = "{\"id\":9999999,\"name\":\"Film\",\"description\":\"desc\",\"releaseDate\":\"2000-01-01\",\"duration\":100,\"mpa\":{\"id\":1}}";
 
         ApiResponse response = sendJson("PUT", "/films", body);
 

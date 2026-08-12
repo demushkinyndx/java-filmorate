@@ -15,8 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class UserDataTest extends AbstractTestHttpClient {
 
     @Test
-    @DisplayName("Взаимное добавление друзей")
-    void shouldAddFriendMutual() throws Exception {
+    @DisplayName("Добавление друзей одностороннее")
+    void shouldAddFriendOneWay() throws Exception {
         int vovaId = createUser("vova@yandex.ru", "vova");
         int mashaId = createUser("masha@mail.ru", "masha");
 
@@ -27,13 +27,12 @@ class UserDataTest extends AbstractTestHttpClient {
         assertEquals(HttpStatus.OK.value(), addFriendResponse.statusCode());
         assertEquals(1, userFriends.body().size());
         assertEquals(mashaId, ((Number) userFriends.body().getFirst().get("id")).intValue());
-        assertEquals(1, friendFriends.body().size());
-        assertEquals(vovaId, ((Number) friendFriends.body().getFirst().get("id")).intValue());
+        assertTrue(friendFriends.body().isEmpty());
     }
 
     @Test
-    @DisplayName("Поудалять друзей взаимно и отвечать 200 OK")
-    void shouldRemoveFriendSymmetrically() throws Exception {
+    @DisplayName("Удаление дружбы затрагивает только инициатора")
+    void shouldRemoveFriendOneWay() throws Exception {
         int userId = createUser("vova@yandex.ru", "vova");
         int friendId = createUser("masha@mail.ru", "masha");
         sendJson("PUT", "/users/" + userId + "/friends/" + friendId, "");
@@ -55,11 +54,9 @@ class UserDataTest extends AbstractTestHttpClient {
 
         ApiResponse removeFriendResponse = sendJson("DELETE", "/users/" + userId + "/friends/" + friendId, "");
         ApiListResponse userFriends = getJsonList("/users/" + userId + "/friends");
-        ApiListResponse friendFriends = getJsonList("/users/" + friendId + "/friends");
 
         assertEquals(HttpStatus.OK.value(), removeFriendResponse.statusCode());
         assertTrue(userFriends.body().isEmpty());
-        assertTrue(friendFriends.body().isEmpty());
     }
 
     @Test

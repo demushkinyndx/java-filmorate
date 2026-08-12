@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Repository("filmDbStorage")
@@ -32,7 +33,7 @@ public class FilmDbStorage implements FilmStorageInterface<Film> {
                         SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration,
                                m.rating_id, m.rating_name
                         FROM films f
-                        JOIN mpa_ratings m ON m.rating_id = f.rating_id
+                        INNER JOIN mpa_ratings m ON m.rating_id = f.rating_id
                         ORDER BY f.film_id
                         """,
                 (rs, rowNum) -> mapFilm(
@@ -55,7 +56,7 @@ public class FilmDbStorage implements FilmStorageInterface<Film> {
                             SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration,
                                    m.rating_id, m.rating_name
                             FROM films f
-                            JOIN mpa_ratings m ON m.rating_id = f.rating_id
+                            INNER JOIN mpa_ratings m ON m.rating_id = f.rating_id
                             WHERE f.film_id = ?
                             """,
                     (rs, rowNum) -> mapFilm(
@@ -95,7 +96,7 @@ public class FilmDbStorage implements FilmStorageInterface<Film> {
             statement.setInt(5, film.getMpa().getId());
             return statement;
         }, keyHolder);
-        Number id = keyHolder.getKey();
+        Number id = extractGeneratedId(keyHolder, "FILM_ID");
         if (id == null) {
             throw new IllegalStateException("Не удалось получить id сохраненного фильма");
         }
@@ -173,9 +174,9 @@ public class FilmDbStorage implements FilmStorageInterface<Film> {
 
     private Set<Genre> loadGenres(int filmId) {
         List<Genre> genres = jdbcTemplate.query("""
-                        SELECT g.genre_id, g.name
+                        SELECT g.genre_id, g."name"
                         FROM films_genres fg
-                        JOIN genres g ON g.genre_id = fg.genre_id
+                        INNER JOIN genres g ON g.genre_id = fg.genre_id
                         WHERE fg.film_id = ?
                         ORDER BY g.genre_id
                         """,
@@ -230,5 +231,21 @@ public class FilmDbStorage implements FilmStorageInterface<Film> {
         film.setGenres(new LinkedHashSet<>());
         film.setLikes(new LinkedHashSet<>());
         return film;
+    }
+
+    private Number extractGeneratedId(KeyHolder keyHolder, String keyName) {
+        Number id = keyHolder.getKey();
+        if (id != null) {
+            return id;
+        }
+        Map<String, Object> keys = keyHolder.getKeys();
+        if (keys == null) {
+            return null;
+        }
+        Object value = keys.get(keyName);
+        if (!(value instanceof Number) && !keys.isEmpty()) {
+            value = keys.values().iterator().next();
+        }
+        return value instanceof Number number ? number : null;
     }
 }
