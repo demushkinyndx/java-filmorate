@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ErrorCodes;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
@@ -64,6 +66,12 @@ public class FilmService {
     }
 
     private void normalizeReferences(Film film) {
+        if (film == null) {
+            throw new ValidationException(ErrorCodes.VALIDATION_REQUEST, "Данные фильма не переданы");
+        }
+        if (film.getMpa() == null) {
+            throw new ValidationException(ErrorCodes.VALIDATION_REQUEST, "Рейтинг фильма должен быть указан");
+        }
         film.setMpa(mpaStorage.getById(film.getMpa().getId()));
         if (film.getGenres() == null || film.getGenres().isEmpty()) {
             film.setGenres(new LinkedHashSet<>());

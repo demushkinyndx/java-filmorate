@@ -24,6 +24,9 @@ public class UserService {
     }
 
     public void normalize(User user) {
+        if (user == null) {
+            throw new ValidationException(ErrorCodes.VALIDATION_REQUEST, "Данные пользователя не переданы");
+        }
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -42,7 +45,11 @@ public class UserService {
         normalize(user);
         if (user.getId() > 0) {
             User existingUser = userStorage.getById(user.getId());
-            user.setFriends(new LinkedHashSet<>(existingUser.getFriends()));
+            if (existingUser.getFriends() == null) {
+                user.setFriends(new LinkedHashSet<>());
+            } else {
+                user.setFriends(new LinkedHashSet<>(existingUser.getFriends()));
+            }
         }
         return userStorage.update(user);
     }

@@ -24,11 +24,15 @@ public class GenreDbStorage {
 
     public Genre getById(int id) {
         try {
-            return jdbcTemplate.queryForObject(
+            Genre genre = jdbcTemplate.queryForObject(
                     "SELECT genre_id, \"name\" FROM genres WHERE genre_id = ?",
                     (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("name")),
                     id
             );
+            if (genre == null) {
+                throw new NotFoundException(ErrorCodes.GENRE_NOT_FOUND, "Жанр с id=%d не найден".formatted(id));
+            }
+            return genre;
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException(ErrorCodes.GENRE_NOT_FOUND, "Жанр с id=%d не найден".formatted(id));
         }

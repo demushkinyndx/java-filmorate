@@ -98,7 +98,11 @@ public class UserDbStorage implements UserStorageInterface<User> {
                 user.getId()
         );
         User updatedUser = getById(user.getId());
-        user.setFriends(updatedUser.getFriends());
+        if (updatedUser.getFriends() == null) {
+            user.setFriends(new LinkedHashSet<>());
+        } else {
+            user.setFriends(updatedUser.getFriends());
+        }
         return user;
     }
 

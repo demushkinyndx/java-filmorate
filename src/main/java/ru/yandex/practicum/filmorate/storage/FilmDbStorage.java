@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ErrorCodes;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -81,6 +82,7 @@ public class FilmDbStorage implements FilmStorageInterface<Film> {
 
     @Override
     public Film create(Film film) {
+        validateFilmInput(film);
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement statement = connection.prepareStatement("""
@@ -108,6 +110,7 @@ public class FilmDbStorage implements FilmStorageInterface<Film> {
 
     @Override
     public Film update(Film film) {
+        validateFilmInput(film);
         getById(film.getId());
         int updatedRows = jdbcTemplate.update("""
                         UPDATE films
@@ -247,5 +250,17 @@ public class FilmDbStorage implements FilmStorageInterface<Film> {
             value = keys.values().iterator().next();
         }
         return value instanceof Number number ? number : null;
+    }
+
+    private void validateFilmInput(Film film) {
+        if (film == null) {
+            throw new ValidationException(ErrorCodes.VALIDATION_REQUEST, "Данные фильма не переданы");
+        }
+        if (film.getReleaseDate() == null) {
+            throw new ValidationException(ErrorCodes.VALIDATION_REQUEST, "Дата релиза должна быть указана");
+        }
+        if (film.getMpa() == null) {
+            throw new ValidationException(ErrorCodes.VALIDATION_REQUEST, "Рейтинг фильма должен быть указан");
+        }
     }
 }

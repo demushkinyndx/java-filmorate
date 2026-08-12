@@ -24,11 +24,15 @@ public class MpaDbStorage {
 
     public Mpa getById(int id) {
         try {
-            return jdbcTemplate.queryForObject(
+            Mpa mpa = jdbcTemplate.queryForObject(
                     "SELECT rating_id, rating_name FROM mpa_ratings WHERE rating_id = ?",
                     (rs, rowNum) -> new Mpa(rs.getInt("rating_id"), rs.getString("rating_name")),
                     id
             );
+            if (mpa == null) {
+                throw new NotFoundException(ErrorCodes.MPA_NOT_FOUND, "Рейтинг с id=%d не найден".formatted(id));
+            }
+            return mpa;
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException(ErrorCodes.MPA_NOT_FOUND, "Рейтинг с id=%d не найден".formatted(id));
         }

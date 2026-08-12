@@ -44,3 +44,4 @@ build/
 /docker/volumes/
 /db/filmorate.mv.db
 /db/filmorate.trace.db
+/db/
