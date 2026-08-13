@@ -22,7 +22,10 @@ public class GenreDbStorage {
         );
     }
 
-    public Genre getById(int id) {
+    public Genre getById(Integer id) {
+        if (id == null) {
+            throw new NotFoundException(ErrorCodes.GENRE_NOT_FOUND, "Жанр с id=null не найден");
+        }
         try {
             Genre genre = jdbcTemplate.queryForObject(
                     "SELECT genre_id, \"name\" FROM genres WHERE genre_id = ?",

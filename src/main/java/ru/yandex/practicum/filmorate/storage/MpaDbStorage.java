@@ -22,7 +22,10 @@ public class MpaDbStorage {
         );
     }
 
-    public Mpa getById(int id) {
+    public Mpa getById(Integer id) {
+        if (id == null) {
+            throw new NotFoundException(ErrorCodes.MPA_NOT_FOUND, "Рейтинг с id=null не найден");
+        }
         try {
             Mpa mpa = jdbcTemplate.queryForObject(
                     "SELECT rating_id, rating_name FROM mpa_ratings WHERE rating_id = ?",
