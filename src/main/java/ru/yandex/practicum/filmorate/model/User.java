@@ -7,8 +7,10 @@ import jakarta.validation.constraints.PastOrPresent;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validation.user.LoginWithoutSpaces;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -28,6 +30,8 @@ public class User {
     @NotNull(message = "Дата рождения должна быть указана")
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
+
+    private Map<Integer, FriendshipStatus> friendshipStatuses = new LinkedHashMap<>();
 
     private Set<Integer> friends = new LinkedHashSet<>();
 }
